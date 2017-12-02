@@ -35,7 +35,7 @@ class EpsilonGreedyAgent(BanditAgent):
     def get_action(self, state):
         action = None
 
-        if self.epsilon > 0.0 and rand_un() <= self.epsilon:
+        if self.epsilon > 0.0 and np.random.binomial(1, self.epsilon) == 1:
             action = rand_choice(self.actions)
         else:
             action = self.action_value_method(self.actions, self.estimated_action_values)
@@ -55,11 +55,12 @@ class EpsilonGreedyAgent(BanditAgent):
 
 
 def greedy(actions, est):
-    result = None
-    max_est = None
-    for a in actions:
-        if not result or est[a] > max_est or (est[a] == max_est and rand_un() < 0.5):
-            result = a
-            max_est = est[a]
-
-    return result
+    # result = None
+    # max_est = None
+    # for a in actions:
+    #     if not result or est[a] > max_est or (est[a] == max_est and rand_un() < 0.5):
+    #         result = a
+    #         max_est = est[a]
+    #
+    # return result
+    return np.argmax(est)

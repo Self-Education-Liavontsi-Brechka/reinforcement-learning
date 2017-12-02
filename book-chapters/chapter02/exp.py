@@ -12,8 +12,8 @@ class BanditExperiment(object):
         self.max_steps = max_steps
         self.number_of_arms = number_of_arms
 
-        self.optimality = np.full(max_steps, None)
-        self.avg_reward = np.full(max_steps, None)
+        self.optimality = np.full(max_steps, 0.0)
+        self.avg_reward = np.full(max_steps, 0.0)
 
     def execute(self):
         pass
@@ -68,15 +68,13 @@ class GreedyBanditExperiment(BanditExperiment):
                 reward = environment.do_action(next_action)
                 agent.update_est_value(next_action, reward)
 
-                if not self.avg_reward[i]:
-                    self.avg_reward[i] = reward
-                else:
-                    self.avg_reward[i] = self.avg_reward[i] + (reward - self.avg_reward[i]) / (i + 1.0)
+                self.avg_reward[i] += reward
 
             if k % 100 == 0:
                 print '.',
                 sys.stdout.flush()
 
+        self.avg_reward /= self.max_runs
         print 'Done'
 
     def get_results(self):
