@@ -1,8 +1,9 @@
 from environment import KArmedTestbed
-from agent import RandomAgent
+from agent import RandomAgent, EpsilonGreedyAgent
 from utils import plot_results
 
 import numpy as np
+import sys
 
 
 class BanditExperiment(object):
@@ -15,6 +16,9 @@ class BanditExperiment(object):
         self.avg_reward = np.full(max_steps, None)
 
     def execute(self):
+        pass
+
+    def get_results(self):
         pass
 
     def handle_results(self):
@@ -30,18 +34,53 @@ class RandomBanditExperiment(BanditExperiment):
             environment = KArmedTestbed(self.number_of_arms)
             agent = RandomAgent(self.number_of_arms)
 
-            num_steps = 0
-
             for i in np.arange(self.max_steps):
                 current_state = environment.get_current_state()
                 next_action = agent.get_action(current_state)
                 reward = environment.do_action(next_action)
 
-                num_steps += 1
                 if not self.avg_reward[i]:
                     self.avg_reward[i] = reward
                 else:
-                    self.avg_reward[i] = self.avg_reward[i] + (reward - self.avg_reward[i]) / num_steps
+                    self.avg_reward[i] = self.avg_reward[i] + (reward - self.avg_reward[i]) / (i + 1.0)
 
     def handle_results(self):
         plot_results(np.arange(1, self.max_steps + 1, 1), self.avg_reward, 'random_exp.png')
+
+
+class GreedyBanditExperiment(BanditExperiment):
+    def __init__(self, action_value_method, max_runs=2000, max_steps=1000, number_of_arms=10,
+                 epsilon=0.0, step_size=None):
+        super(GreedyBanditExperiment, self).__init__(max_runs, max_steps, number_of_arms)
+
+        self.action_value_method = action_value_method
+        self.epsilon = epsilon
+        self.step_size = step_size
+
+    def execute(self):
+        for k in np.arange(self.max_runs):
+            environment = KArmedTestbed(self.number_of_arms)
+            agent = EpsilonGreedyAgent(self.number_of_arms, self.action_value_method, self.epsilon, self.step_size)
+
+            for i in np.arange(self.max_steps):
+                current_state = environment.get_current_state()
+                next_action = agent.get_action(current_state)
+                reward = environment.do_action(next_action)
+                agent.update_est_value(next_action, reward)
+
+                if not self.avg_reward[i]:
+                    self.avg_reward[i] = reward
+                else:
+                    self.avg_reward[i] = self.avg_reward[i] + (reward - self.avg_reward[i]) / (i + 1.0)
+
+            if k % 100 == 0:
+                print '.',
+                sys.stdout.flush()
+
+        print 'Done'
+
+    def get_results(self):
+        return self.avg_reward
+
+    def handle_results(self):
+        plot_results(np.arange(1, self.max_steps + 1, 1), self.avg_reward, 'greedy_exp_%d_.png' % self.epsilon)
