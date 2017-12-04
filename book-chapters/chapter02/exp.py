@@ -1,4 +1,4 @@
-from environment import KArmedTestbed
+from environment import KArmedTestbed, KArmedTestbedNonStationary
 from agent import RandomAgent, EpsilonGreedyAgent
 from utils import plot_results
 
@@ -49,20 +49,24 @@ class RandomBanditExperiment(BanditExperiment):
 
 
 class GreedyBanditExperiment(BanditExperiment):
-    def __init__(self, action_value_method, max_runs=2000, max_steps=1000, number_of_arms=10,
-                 epsilon=0.0, step_size=None):
+    def __init__(self, max_runs=2000, max_steps=1000, number_of_arms=10,
+                 epsilon=0.0, step_size=None, is_stationary=True, initial_value=0.0):
         super(GreedyBanditExperiment, self).__init__(max_runs, max_steps, number_of_arms)
 
-        self.action_value_method = action_value_method
         self.epsilon = epsilon
         self.step_size = step_size
+        self.is_stationary = is_stationary
+        self.initial_value = initial_value
 
     def execute(self):
         for k in np.arange(self.max_runs):
-            environment = KArmedTestbed(self.number_of_arms)
-            agent = EpsilonGreedyAgent(self.number_of_arms, self.action_value_method, self.epsilon, self.step_size)
+            environment = None
+            if self.is_stationary:
+                environment = KArmedTestbed(self.number_of_arms)
+            else:
+                environment = KArmedTestbedNonStationary(self.number_of_arms)
 
-            optimal_action = np.argmax(environment.action_value)
+            agent = EpsilonGreedyAgent(self.number_of_arms, self.epsilon, self.step_size, self.initial_value)
 
             for i in np.arange(self.max_steps):
                 current_state = environment.get_current_state()
@@ -70,7 +74,7 @@ class GreedyBanditExperiment(BanditExperiment):
                 reward = environment.do_action(next_action)
                 agent.update_est_value(next_action, reward)
 
-                if optimal_action == next_action:
+                if np.argmax(environment.action_value) == next_action:
                     self.optimality[i] += 1
                 self.avg_reward[i] += reward
 
