@@ -10,8 +10,8 @@ if __name__ == '__main__':
     # random_exp.handle_results()
 
     action_value_method = greedy
-    max_runs = 10000
-    max_steps = 2000
+    max_runs = 2000
+    max_steps = 10000
     number_of_arms = 10
     step_size = None
 
@@ -28,8 +28,22 @@ if __name__ == '__main__':
     epsilon_001_res = epsilon_001_exp.get_results()
 
     x = np.arange(1, max_steps + 1, 1, dtype='int32')
-    plt.plot(x, greedy_res, 'k', x, epsilon_01_res, 'r', x, epsilon_001_res, 'g')
+
+    plt.subplot(2, 1, 1)
+    lines = plt.plot(x, greedy_res[1], 'k', x, epsilon_01_res[1], 'r', x, epsilon_001_res[1], 'g')
+    plt.setp(lines[0], linewidth=0.5)
+    plt.setp(lines[1], linewidth=0.5)
+    plt.setp(lines[2], linewidth=0.5)
     plt.ylabel('Average reward')
+    plt.xlabel('Steps')
+    plt.legend(('Greedy', 'Epsilon = 0.1', 'Epsilon = 0.01'), loc='upper right')
+
+    plt.subplot(2, 1, 2)
+    lines = plt.plot(x, greedy_res[0] * 100.0, 'k', x, epsilon_01_res[0] * 100.0, 'r', x, epsilon_001_res[0] * 100.0, 'g')
+    plt.setp(lines[0], linewidth=0.5)
+    plt.setp(lines[1], linewidth=0.5)
+    plt.setp(lines[2], linewidth=0.5)
+    plt.ylabel('% of optimal action')
     plt.xlabel('Steps')
     plt.legend(('Greedy', 'Epsilon = 0.1', 'Epsilon = 0.01'), loc='upper right')
 

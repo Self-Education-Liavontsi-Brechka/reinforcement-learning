@@ -62,23 +62,28 @@ class GreedyBanditExperiment(BanditExperiment):
             environment = KArmedTestbed(self.number_of_arms)
             agent = EpsilonGreedyAgent(self.number_of_arms, self.action_value_method, self.epsilon, self.step_size)
 
+            optimal_action = np.argmax(environment.action_value)
+
             for i in np.arange(self.max_steps):
                 current_state = environment.get_current_state()
                 next_action = agent.get_action(current_state)
                 reward = environment.do_action(next_action)
                 agent.update_est_value(next_action, reward)
 
+                if optimal_action == next_action:
+                    self.optimality[i] += 1
                 self.avg_reward[i] += reward
 
             if k % 100 == 0:
                 print '.',
                 sys.stdout.flush()
 
+        self.optimality /= self.max_runs
         self.avg_reward /= self.max_runs
         print 'Done'
 
     def get_results(self):
-        return self.avg_reward
+        return self.optimality, self.avg_reward
 
     def handle_results(self):
         plot_results(np.arange(1, self.max_steps + 1, 1), self.avg_reward, 'greedy_exp_%d_.png' % self.epsilon)
