@@ -4,8 +4,6 @@ from sys import maxint
 from envs.gridworld import GridWorld
 from policy_evaluation import policy_eval
 
-env = GridWorld()
-
 
 def policy_improvement(env, policy_eval_fn=policy_eval, discount_factor=1.0):
     """
@@ -33,7 +31,7 @@ def policy_improvement(env, policy_eval_fn=policy_eval, discount_factor=1.0):
         is_stable = True
 
         for s in range(env.nS):
-            old_pi_a = policy[s]
+            old_pi_a = np.copy(policy[s])
             max_v = -maxint
 
             for a in range(env.nA):
@@ -66,19 +64,23 @@ def policy_improvement(env, policy_eval_fn=policy_eval, discount_factor=1.0):
 
     return policy, V
 
-policy, v = policy_improvement(env)
-print("Policy Probability Distribution:")
-print(policy)
-print("")
 
-print("Reshaped Grid Policy (0=up, 1=right, 2=down, 3=left):")
-print(np.reshape(np.argmax(policy, axis=1), env.shape))
-print("")
+if __name__ == '__main__':
+    env = GridWorld()
 
-print("Value Function:")
-print(v)
-print("")
+    policy, v = policy_improvement(env)
+    print("Policy Probability Distribution:")
+    print(policy)
+    print("")
 
-print("Reshaped Grid Value Function:")
-print(v.reshape(env.shape))
-print("")
+    print("Reshaped Grid Policy (0=up, 1=right, 2=down, 3=left):")
+    print(np.reshape(np.argmax(policy, axis=1), env.shape))
+    print("")
+
+    print("Value Function:")
+    print(v)
+    print("")
+
+    print("Reshaped Grid Value Function:")
+    print(v.reshape(env.shape))
+    print("")
