@@ -1,6 +1,6 @@
 import numpy as np
 
-from envs.car_rental import CarRental
+from lib.envs.car_rental import CarRental
 from topics.dp.policy_iteration import policy_improvement
 
 # env = CarRental(max_cars_available=10, max_cars_move=3, rent_credit=5, move_cost=1, lambdas=(2, 3, 2, 1))

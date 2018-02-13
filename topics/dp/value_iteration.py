@@ -1,6 +1,6 @@
 import numpy as np
 
-from envs.gridworld import GridWorld
+from lib.envs.gridworld import GridWorld
 
 
 def value_iteration(env, discount_factor=1.0, theta=0.00001):

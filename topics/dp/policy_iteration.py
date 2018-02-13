@@ -1,7 +1,7 @@
 import numpy as np
 
 from sys import maxint
-from envs.gridworld import GridWorld
+from lib.envs.gridworld import GridWorld
 from policy_evaluation import policy_eval
 
 

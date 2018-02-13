@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from envs.gambler import GamblerEnv
+from lib.envs.gambler import GamblerEnv
 from value_iteration import value_iteration
 
 env = GamblerEnv(goal_amount=100)
