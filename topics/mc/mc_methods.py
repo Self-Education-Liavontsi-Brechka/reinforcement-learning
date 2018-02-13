@@ -50,7 +50,7 @@ def mc_on_policy_prediction(policy, env, num_episodes, discount_factor=1.0):
     return V
 
 
-def mc_on_policy_control_epsilon_greedy(env, num_episodes, discount_factor=1.0, epsilon=0.1):
+def mc_on_policy_control_epsilon_greedy(env, num_episodes, discount_factor=1.0, epsilon=0.1, Q_default=None):
     """
     Monte Carlo Control using Epsilon-Greedy policies.
     Finds an optimal epsilon-greedy policy.
@@ -76,7 +76,7 @@ def mc_on_policy_control_epsilon_greedy(env, num_episodes, discount_factor=1.0, 
 
     # The final action-value function.
     # A nested dictionary that maps state -> (action -> action-value).
-    Q = defaultdict(lambda: np.zeros(env.action_space.n))
+    Q = defaultdict(Q_default if Q_default else lambda: np.zeros(env.action_space.n))
 
     # The policy we're following
     policy = make_epsilon_greedy_policy(Q, epsilon, env.action_space.n)

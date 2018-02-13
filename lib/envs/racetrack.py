@@ -33,9 +33,8 @@ class RacetrackEnv(gym.Env):
         . - empty cell
         * - finish cell
 
-    An action space is represented as a multi discrete space where:
-        1st element - vertical velocity change (min - -1, max - 1)
-        2nd - horizontal velocity change (min - -1, max - 1)
+    An action space is represented as a discrete space where:
+        v * 3 + h = action, where v and h are vertical and horizontal velocity changes respectively
 
     An observation space is represented as a tuple of 4 Discrete spaces where:
         1st space - row coordinate
@@ -49,7 +48,7 @@ class RacetrackEnv(gym.Env):
         assert len(track_grid) >= 1
         assert len(set([len(row) for row in track_grid])) == 1
 
-        self.action_space = spaces.MultiDiscrete([[-1, 1], [-1, 1]])
+        self.action_space = spaces.Discrete(9)
         self.observation_space = spaces.Tuple((spaces.Discrete(len(track_grid)),
                                                spaces.Discrete(len(track_grid[0])),
                                                spaces.Discrete(5),
@@ -67,11 +66,13 @@ class RacetrackEnv(gym.Env):
             if cell == RacetrackEnv.START_CELL
         ]
 
-    def _step(self, action):
-        assert len(action) == 2
+    def _step(self, raw_action):
+        assert 0 <= raw_action < 9
+
+        action = (raw_action // 3 - 1, raw_action % 3 - 1)
         assert -1 <= action[0] <= 1 and -1 <= action[1] <= action[1]
 
-        action = np.random.choice([(0, 0), action], p=[0.1, 0.9])
+        action = (0, 0) if np.random.choice(2, p=[0.1, 0.9]) == 0 else action
 
         velocities = self.velocities[0] + action[0], self.velocities[1] + action[1]
         if (velocities == (0, 0) and
@@ -104,6 +105,6 @@ class RacetrackEnv(gym.Env):
 
     def _reset(self):
         self.velocities = (0, 0)
-        self.current_position = np.random.choice(self.start_position)
+        self.current_position = self.start_position[np.random.choice(len(self.start_position))]
 
         return self.current_position[0], self.current_position[1], self.velocities[0], self.velocities[1]
