@@ -1,5 +1,6 @@
 import numpy as np
 import sys
+import itertools
 
 from collections import defaultdict
 from lib import plotting
@@ -182,5 +183,56 @@ def expected_sarsa(env, num_episodes, discount_factor=1.0, alpha=0.5, epsilon=0.
                 break
 
             s = s_prime
+
+    return Q, stats
+
+
+def n_step_sarsa(env, num_episodes, gamma=1.0, alpha=0.5, epsilon=0.1, n=10):
+    Q = defaultdict(lambda: np.zeros(env.action_space.n))
+    policy = make_epsilon_greedy_policy(Q, epsilon, env.action_space.n)
+    stats = plotting.EpisodeStats(
+        episode_lengths=np.zeros(num_episodes),
+        episode_rewards=np.zeros(num_episodes)
+    )
+
+    for i_episode in xrange(num_episodes):
+        if (i_episode + 1) % 100 == 0:
+            print "\rEpisode {0}/{1}.".format(i_episode + 1, num_episodes)
+            sys.stdout.flush()
+
+        T = float('inf')
+        a_store = []
+        s_store = []
+        r_store = [0.0]
+
+        s_store.append(env.reset())
+        a_probs = policy(s_store[0])
+        a_store.append(np.random.choice(np.arange(len(a_probs)), p=a_probs))
+
+        for t in itertools.count():
+            tau = t - n + 1
+
+            if t < T:
+                s_prime, reward, done, info = env.step(a_store[t])
+                r_store.append(reward)
+                s_store.append(s_prime)
+
+                if done:
+                    T = t + 1
+                else:
+                    a_probs = policy(s_store[t + 1])
+                    a_store.append(np.random.choice(np.arange(len(a_probs)), p=a_probs))
+
+                stats.episode_rewards[i_episode] += reward
+                stats.episode_lengths[i_episode] += 1
+
+            if tau >= 0:
+                G = np.sum([gamma ** (i - tau - 1) * r_store[i] for i in xrange(tau + 1, min(tau + n, T) + 1)])
+                if tau + n < T:
+                    G += gamma ** n * Q[s_store[tau + n]][a_store[tau + n]]
+                Q[s_store[tau]][a_store[tau]] += alpha * (G - Q[s_store[tau]][a_store[tau]])
+
+            if tau == T - 1:
+                break
 
     return Q, stats
