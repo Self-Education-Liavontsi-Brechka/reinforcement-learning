@@ -13,14 +13,14 @@ for i_episode in range(episodes):
     episode = [s]
 
     while True:
-        s_prime, reward, done, _ = env.step(np.random.choice([-1, 1]))
+        s_prime, reward, done, _ = env.step(None)
 
         if done:
-            for i, s in enumerate(episode):
+            for s in episode:
                 V[s] += reward
             break
 
-        episode.append(s_prime - 1)
+        episode.append(s_prime)
 
     if (i_episode + 1) % (episodes / 10) == 0:
         print '.',
